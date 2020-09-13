@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
     Handler handler;
     Runnable r;
 
+    boolean hitObstacle = false;
+//    boolean completedEarly=false;
     int totalWidth;
     int totalHeight;
     int xCarInitial;
@@ -131,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         c[2] = findViewById(R.id.coin3);
         c[3] = findViewById(R.id.coin4);
         c[4] = findViewById(R.id.coin5);
-        obstacles=new Obstacles[3];
+        obstacles = new Obstacles[3];
         obstacles[0] = findViewById(R.id.ob1);
         obstacles[1] = findViewById(R.id.ob2);
         obstacles[2] = findViewById(R.id.ob3);
@@ -139,17 +141,6 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < 5; i++) {
             neglect[i] = -1;
         }
-
-        handler = new Handler(getMainLooper());
-        r = new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < pts.size(); i++) {
-
-                    drawCar(pts.get(i).x, pts.get(i).y);
-                }
-            }
-        };
 
         //color
         cBack = R.color.black;
@@ -197,9 +188,9 @@ public class MainActivity extends AppCompatActivity {
                 for (Coins coin : c) {
                     coin.setVisibility(View.VISIBLE);
                 }
-//                for(Obstacles o:obstacles){
-//                    o.setVisibility(View.VISIBLE);
-//                }
+                for (Obstacles o : obstacles) {
+                    o.setVisibility(View.VISIBLE);
+                }
                 car.setVisibility(View.VISIBLE);
                 coinsDisp.setVisibility(View.VISIBLE);
 
@@ -285,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initial() {
         canvas.drawColor(getColor(cBack));
-//        drawCar(xCarInitial, yCarIntial);
         drawDest(xDestInitial, yDestInitial);
         trajStart = false;
 
@@ -299,7 +289,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void moveCar() {
         initialWOCar();
-        canvas.drawPath(trajectory, pTrack);
         carAnimator = ObjectAnimator.ofFloat(car, "x", "y", trajectory);
         neglectIndex = 0;
         carAnimator.setDuration(2000);
@@ -314,13 +303,16 @@ public class MainActivity extends AppCompatActivity {
 
                 canvas.drawLine(xCarOld, yCarOld, xCar, yCar, pBackStroke);
 
+                if (dash()) {
+                    dashEnd();
+                    hitObstacle=true;
+                }
 
                 if ((xCar < xDestInitial + touchPadding && xCar > xDestInitial - touchPadding) && (yCar < yDestInitial + touchPadding && yCar > yDestInitial - touchPadding)) {
                     status = "complete";
-                    if (carAnimator.getCurrentPlayTime() < 1500) {
-                        carAnimator.end();
-                    }
+                    checkandEnd();
                 }
+
                 xCarOld = xCar;
                 yCarOld = yCar;
 
@@ -350,6 +342,43 @@ public class MainActivity extends AppCompatActivity {
             public void onAnimationRepeat(Animator animator) {
             }
         });
+    }
+
+    private void dashEnd() {
+
+        imageView.setVisibility(View.INVISIBLE);
+        root.setBackground(getResources().getDrawable(R.drawable.grey2));
+        for (Coins coin : c) {
+            coin.setVisibility(View.INVISIBLE);
+        }
+        for (Obstacles o : obstacles) {
+            o.setVisibility(View.INVISIBLE);
+        }
+        car.setVisibility(View.INVISIBLE);
+        coinsDisp.setVisibility(View.INVISIBLE);
+        moveBt.setVisibility(View.INVISIBLE);
+
+        result.setVisibility(View.VISIBLE);
+        resultText = "You have hit an obstacle. Try again";
+        result.setText(resultText);
+        resultTitle.setVisibility(View.VISIBLE);
+        resultTitle.setText("OOPS!!!");
+        refresh.setVisibility(View.VISIBLE);
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                reset();
+            }
+        });
+    }
+
+    private boolean dash() {
+        for (int i = 0; i < 3; i++) {
+            if (intersectStone(obstacles[i], car)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean touchGold() {
@@ -392,26 +421,38 @@ public class MainActivity extends AppCompatActivity {
         return view1Rect.intersect(view2Rect);
     }
 
+    private boolean intersectStone(Obstacles o, CarView car) {
+        if (o == null || car == null) {
+            return false;
+        }
+        final int[] view1Loc = new int[2];
+        o.getLocationOnScreen(view1Loc);
+        final Rect view1Rect = new Rect(view1Loc[0],
+                view1Loc[1],
+                view1Loc[0] + o.getWidth(),
+                view1Loc[1] + o.getHeight());
+        int[] view2Loc = new int[2];
+        car.getLocationOnScreen(view2Loc);
+        final Rect view2Rect = new Rect(view2Loc[0],
+                view2Loc[1],
+                view2Loc[0] + car.getWidth(),
+                view2Loc[1] + car.getHeight());
+        return view1Rect.intersect(view2Rect);
+    }
+
     private void partialWOCar() {
         if (trajStart) {
-//            drawCar(xCarInitial, yCarIntial);
         }
         drawDest(xDestInitial, yDestInitial);
     }
 
-    void drawCar(int xs, int ys) {
-//        canvas.drawCircle(xs, ys, rCar, pCar);
-//        Car.setxCarNow(xs);
-//        Car.setyCarNow(ys);
-    }
-
     void drawDest(int xs, int ys) {
-        Paint pBlackText=new Paint();
+        Paint pBlackText = new Paint();
         canvas.drawRect(xs - destRect, ys - destRect, xs + destRect, ys + destRect, pDest);
         pBlackText.setStyle(Paint.Style.FILL);
         pBlackText.setColor(getColor(R.color.black));
         pBlackText.setTextSize(100);
-        canvas.drawText("P",xs-25,ys+25,pBlackText);
+        canvas.drawText("P", xs - 25, ys + 25, pBlackText);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -439,13 +480,13 @@ public class MainActivity extends AppCompatActivity {
                             trajStart = false;
                         }
                         if (trajStart) {
-                            trajectory.moveTo(xTouch, yTouch);
+                            trajectory.moveTo(xTouch-50, yTouch);
                             pts.add(new Point(xTouch, yTouch));
                         }
                         break;
                     case MotionEvent.ACTION_MOVE:
                         if (trajStart) {
-                            trajectory.lineTo(xTouch, yTouch);
+                            trajectory.lineTo(xTouch-50, yTouch);
                             pts.add(new Point(xTouch, yTouch));
                             canvas.drawLine(xTouchOld, yTouchOld, xTouch, yTouch, pTrack);
                             xTouchOld = xTouch;
@@ -470,6 +511,7 @@ public class MainActivity extends AppCompatActivity {
     private void reset() {
         refresh.setVisibility(View.INVISIBLE);
         resultTitle.setVisibility(View.INVISIBLE);
+        resultTitle.setText("Result: ");
         result.setVisibility(View.INVISIBLE);
         trajectory.reset();
         coins = 0;
@@ -478,12 +520,12 @@ public class MainActivity extends AppCompatActivity {
         status = "incomplete";
 
         imageView.setVisibility(View.VISIBLE);
-        for (Coins coin:c) {
+        for (Coins coin : c) {
             coin.setVisibility(View.VISIBLE);
         }
-//        for(Obstacles o:obstacles){
-//            o.setVisibility(View.VISIBLE);
-//        }
+        for (Obstacles o : obstacles) {
+            o.setVisibility(View.VISIBLE);
+        }
         car.setVisibility(View.VISIBLE);
         car.setX(xCarInitial - 35);
         car.setY(yCarIntial - 35);
@@ -494,34 +536,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkandEnd() {
-        if (status.equals("incomplete")) {
-            if ((xCar < xDestInitial + touchPadding && xCar > xDestInitial - touchPadding) && (yCar < yDestInitial + touchPadding && yCar > yDestInitial - touchPadding)) {
-                status = "complete";
+        if (!hitObstacle) {
+            if (status.equals("incomplete")) {
+                if ((xCar < xDestInitial + touchPadding && xCar > xDestInitial - touchPadding) && (yCar < yDestInitial + touchPadding && yCar > yDestInitial - touchPadding)) {
+                    status = "complete";
+                }
             }
-        }
 
-        imageView.setVisibility(View.INVISIBLE);
-        root.setBackground(getResources().getDrawable(R.drawable.grey2));
-        for (Coins coin:c) {
-            coin.setVisibility(View.INVISIBLE);
-        }
-        for(Obstacles o:obstacles){
-            o.setVisibility(View.INVISIBLE);
-        }
-        car.setVisibility(View.INVISIBLE);
-        coinsDisp.setVisibility(View.INVISIBLE);
-        moveBt.setVisibility(View.INVISIBLE);
-
-        result.setVisibility(View.VISIBLE);
-        resultText = "STATUS: " + status + "\n\n" + "Coins: " + coins;
-        result.setText(resultText);
-        resultTitle.setVisibility(View.VISIBLE);
-        refresh.setVisibility(View.VISIBLE);
-        refresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                reset();
+            imageView.setVisibility(View.INVISIBLE);
+            root.setBackground(getResources().getDrawable(R.drawable.grey2));
+            for (Coins coin : c) {
+                coin.setVisibility(View.INVISIBLE);
             }
-        });
+            for (Obstacles o : obstacles) {
+                o.setVisibility(View.INVISIBLE);
+            }
+            car.setVisibility(View.INVISIBLE);
+            coinsDisp.setVisibility(View.INVISIBLE);
+            moveBt.setVisibility(View.INVISIBLE);
+
+            result.setVisibility(View.VISIBLE);
+            resultText = "STATUS: " + status + "\n\n" + "Coins: " + coins;
+            result.setText(resultText);
+            resultTitle.setVisibility(View.VISIBLE);
+            refresh.setVisibility(View.VISIBLE);
+            refresh.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    reset();
+                }
+            });
+        }
     }
 }
