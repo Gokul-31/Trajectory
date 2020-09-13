@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Trajectory</string>
+    <string name="start">Start</string>
+    <string name="move_car">move</string>
+    <string name="let_s_go">Let\'s Go</string>
+    <string name="rules_text">From the car and draw a trajectory to the destination at the top of the screen.
+        Click move to run the car.
+        Make sure you don\'t hit any obstacles and collect maximum coins possible on the way. Good Luck!</string>
+    <string name="how_to_play">How to Play?</string>
+    <string name="coins_0">Coins: 0</string>
+
+</resources>
