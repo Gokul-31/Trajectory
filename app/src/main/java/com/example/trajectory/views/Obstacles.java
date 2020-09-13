@@ -60,8 +60,8 @@ public class Obstacles extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        width=30;
-        height=30;
+        width=getWidth();
+        height=getHeight();
         radius= width/2;
 
         canvas.drawCircle(radius,radius,radius, pObstacles);

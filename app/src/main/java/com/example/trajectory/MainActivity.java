@@ -29,11 +29,12 @@ import com.example.trajectory.views.Coins;
 import com.example.trajectory.views.Obstacles;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     ConstraintLayout root;
-    Obstacles[] obstacles = new Obstacles[3];
+    Obstacles[] obstacles;
     Button startBt;
     Button moveBt;
     ImageView imageView;
@@ -109,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         init();
     }
 
@@ -131,6 +131,10 @@ public class MainActivity extends AppCompatActivity {
         c[2] = findViewById(R.id.coin3);
         c[3] = findViewById(R.id.coin4);
         c[4] = findViewById(R.id.coin5);
+        obstacles=new Obstacles[3];
+        obstacles[0] = findViewById(R.id.ob1);
+        obstacles[1] = findViewById(R.id.ob2);
+        obstacles[2] = findViewById(R.id.ob3);
 
         for (int i = 0; i < 5; i++) {
             neglect[i] = -1;
@@ -153,10 +157,6 @@ public class MainActivity extends AppCompatActivity {
         cDest = R.color.pink;
         cTrack = R.color.colorAccent;
         cDum = R.color.white;
-
-        obstacles[0] = new Obstacles(getApplicationContext());
-        obstacles[1] = new Obstacles(getApplicationContext());
-        obstacles[2] = new Obstacles(getApplicationContext());
 
         trajectory = new Path();
 
@@ -197,6 +197,9 @@ public class MainActivity extends AppCompatActivity {
                 for (Coins coin : c) {
                     coin.setVisibility(View.VISIBLE);
                 }
+//                for(Obstacles o:obstacles){
+//                    o.setVisibility(View.VISIBLE);
+//                }
                 car.setVisibility(View.VISIBLE);
                 coinsDisp.setVisibility(View.VISIBLE);
 
@@ -216,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
                 yDestInitial = initalpaddings;
 
                 initial();
-                generateObstacles();
                 setImageListener();
             }
         });
@@ -229,24 +231,61 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void generateObstacles() {
-        ConstraintSet set = new ConstraintSet();
-        Obstacles ob = new Obstacles(getApplicationContext());
-        ob.setId(Obstacles.generateViewId());
-        root.addView(ob, 0);
+//    private void generateObstacles() {
+//        boolean proper;
+//        Random r = new Random();
+//        for (int i = 0; i < 3; i++) {
+//            proper = false;
+//            while (!proper) {
+//                xObs = (int) (Math.random() * totalWidth);
+//                yObs = 100 + (int) (Math.random() * (totalHeight - 200));
+//
+//                obstacles[i].setX(xObs);
+//                obstacles[i].setX(yObs);
+//                proper = ifProper(i);
+//            }
+//            if(proper){
+//                obstacles[i].setVisibility(View.VISIBLE);
+//            }
+//        }
+//    }
 
-        set.clone(root);
-        set.connect(root.getId(), ConstraintSet.TOP, ob.getId(), ConstraintSet.TOP, 200);
-        set.connect(root.getId(), ConstraintSet.LEFT, ob.getId(), ConstraintSet.LEFT, 200);
-        set.applyTo(root);
+//    private boolean ifProper(int i) {
+//        boolean b = true;
+//
+//        for (int j = i; j >= 0; j--) {
+//            b = !(intersectCheck(obstacles[i], obstacles[j]));
+//        }
+//        for (int j = 0; j < 5; j++) {
+//            b = !(intersectCheck(obstacles[i], c[j]));
+//        }
+//        b = !(intersectCheck(car, obstacles[i]));
+//        return b;
+//    }
 
-
-    }
+//    private boolean intersectCheck(View v1, View v2) {
+//        if (v1 == null || v2 == null) {
+//            return false;
+//        }
+//        final int[] view1Loc = new int[2];
+//        v1.getLocationOnScreen(view1Loc);
+//        final Rect view1Rect = new Rect(view1Loc[0],
+//                view1Loc[1],
+//                view1Loc[0] + v1.getWidth(),
+//                view1Loc[1] + v1.getHeight());
+//        int[] view2Loc = new int[2];
+//        v2.getLocationOnScreen(view2Loc);
+//        final Rect view2Rect = new Rect(view2Loc[0],
+//                view2Loc[1],
+//                view2Loc[0] + v2.getWidth(),
+//                view2Loc[1] + v2.getHeight());
+//        return view1Rect.intersect(view2Rect);
+//    }
 
 
     private void initial() {
         canvas.drawColor(getColor(cBack));
-        drawCar(xCarInitial, yCarIntial);
+//        drawCar(xCarInitial, yCarIntial);
         drawDest(xDestInitial, yDestInitial);
         trajStart = false;
 
@@ -313,7 +352,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
     private boolean touchGold() {
         boolean addthis;
         for (int i = 0; i < 5; i++) {
@@ -356,19 +394,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void partialWOCar() {
         if (trajStart) {
-            drawCar(xCarInitial, yCarIntial);
+//            drawCar(xCarInitial, yCarIntial);
         }
         drawDest(xDestInitial, yDestInitial);
     }
 
     void drawCar(int xs, int ys) {
-        canvas.drawCircle(xs, ys, rCar, pCar);
-        Car.setxCarNow(xs);
-        Car.setyCarNow(ys);
+//        canvas.drawCircle(xs, ys, rCar, pCar);
+//        Car.setxCarNow(xs);
+//        Car.setyCarNow(ys);
     }
 
     void drawDest(int xs, int ys) {
+        Paint pBlackText=new Paint();
         canvas.drawRect(xs - destRect, ys - destRect, xs + destRect, ys + destRect, pDest);
+        pBlackText.setStyle(Paint.Style.FILL);
+        pBlackText.setColor(getColor(R.color.black));
+        pBlackText.setTextSize(100);
+        canvas.drawText("P",xs-25,ys+25,pBlackText);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -435,9 +478,12 @@ public class MainActivity extends AppCompatActivity {
         status = "incomplete";
 
         imageView.setVisibility(View.VISIBLE);
-        for (int i = 0; i < 5; i++) {
-            c[i].setVisibility(View.VISIBLE);
+        for (Coins coin:c) {
+            coin.setVisibility(View.VISIBLE);
         }
+//        for(Obstacles o:obstacles){
+//            o.setVisibility(View.VISIBLE);
+//        }
         car.setVisibility(View.VISIBLE);
         car.setX(xCarInitial - 35);
         car.setY(yCarIntial - 35);
@@ -456,8 +502,11 @@ public class MainActivity extends AppCompatActivity {
 
         imageView.setVisibility(View.INVISIBLE);
         root.setBackground(getResources().getDrawable(R.drawable.grey2));
-        for (int i = 0; i < 5; i++) {
-            c[i].setVisibility(View.INVISIBLE);
+        for (Coins coin:c) {
+            coin.setVisibility(View.INVISIBLE);
+        }
+        for(Obstacles o:obstacles){
+            o.setVisibility(View.INVISIBLE);
         }
         car.setVisibility(View.INVISIBLE);
         coinsDisp.setVisibility(View.INVISIBLE);

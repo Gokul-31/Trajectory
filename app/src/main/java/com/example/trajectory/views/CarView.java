@@ -3,13 +3,13 @@ package com.example.trajectory.views;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.view.View;
+
 
 import androidx.annotation.Nullable;
 
 import com.example.trajectory.R;
 
-public class CarView extends View {
+public class CarView extends androidx.appcompat.widget.AppCompatImageView {
 
     Context context;
     int width;
@@ -37,19 +37,12 @@ public class CarView extends View {
         init(attrs);
     }
 
-    public CarView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        this.context=context;
-        init(attrs);
-    }
-
     void init(@Nullable AttributeSet set){
 
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        getX();
-        canvas.drawColor(context.getColor(color));
+        setBackground(getResources().getDrawable(R.drawable.ic_car_top_view_svgrepo_com));
     }
 }
